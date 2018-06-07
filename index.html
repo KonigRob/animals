@@ -3,6 +3,23 @@
 <head>
 	<meta charset="UTF-8">
 	<title>Animal map</title>
+	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+	<script src="https://www.gstatic.com/firebasejs/5.0.4/firebase.js"></script>
+	<script>
+		// Initialize Firebase
+		var config = {
+			apiKey: "AIzaSyCJuD5ep3swJpAbNgDl_ADFEqhyA0025UQ",
+			authDomain: "pixelmeme-js.firebaseapp.com",
+			databaseURL: "https://pixelmeme-js.firebaseio.com",
+			projectId: "pixelmeme-js",
+			storageBucket: "pixelmeme-js.appspot.com",
+			messagingSenderId: "384650003816"
+		};
+		firebase.initializeApp(config);
+		var app = firebase.initializeApp(config);
+		var db = firebase.firestore(app);
+		var storage = firebase.storage();
+	</script>
 </head>
 <body>
 
