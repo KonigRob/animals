@@ -15,13 +15,97 @@
 			storageBucket: "pixelmeme-js.appspot.com",
 			messagingSenderId: "384650003816"
 		};
-		firebase.initializeApp(config);
 		var app = firebase.initializeApp(config);
 		var db = firebase.firestore(app);
 		var storage = firebase.storage();
 	</script>
+	<style type="text/css">
+		.main {
+			text-align: center;
+			background-color: sienna;
+		}
+		#bar ul {
+			list-style-type: none;
+			margin: 0;
+			padding: 0;
+			overflow: hidden;
+		}
+		#bar ul li {
+			display: inline;
+		}
+		#bar ul li a{
+			color: cornsilk;
+			text-align: center;
+			padding: 14px 16px;
+			text-decoration: none;
+			background-color: darkslategrey;
+		}
+		#bar ul li a:hover {
+			background-color: cadetblue;
+		}
+		#memelist {
+
+		}
+	</style>
 </head>
 <body>
+<h1>
+	Pixel Meme
+</h1>
+<div class="main">
+	<div id="bar">
+		<ul>
+			<li><a href="index.html">Home</a></li>
+			<li id="buy"><a href="#">Buy Pixel</a></li>
+			<li><a href="">FAQ</a></li>
+			<li><a href="">Contact Us</a></li>
+			<li id="login"><a href="login.html">Login</a></li>
+			<li id="signout"><button id="btn-signout">Sign-out</button></li>
+			<li id="account"><a href="#">Account</a></li>
+		</ul>
+	</div>
+	<div id="memelist">
+		<map name="memeMap" id="map">
+			<area shape="rect" coords="10, 10, 10, 10" href="" title="Addedme">
+		</map>
+		<img id="mememap" src="" width="1000" height="1000" alt="meme Map">
+	</div>
+</div>
+<noscript><p>please enable javascript</p></noscript>
+<script>
+	app.auth().onAuthStateChanged(function(user) {
 
+		var so = $('#signout');
+		var li = $('#login');
+		var ac = $('#account');
+		var by = $('#buy');
+		if (user) {
+			var docRef = db.collection("users").doc(user.uid);
+			docRef.get().then(function(data){
+				console.log(data);
+			});
+			so.show();
+			ac.show();
+			by.show();
+			li.hide();
+		} else {
+			so.hide();
+			ac.hide();
+			by.hide();
+			li.show();
+		}
+	});
+	$('#btn-signout').click(function(){
+		app.auth().signOut();
+	});
+</script>
+
+<script>
+	$(function(){
+		storage.ref('meme-map/meme-map.png').getDownloadURL().then(function (value) {
+			$('#mememap').attr('src', value + "");
+		});
+	});
+</script>
 </body>
 </html>
