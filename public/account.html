@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<script async src="https://www.googletagmanager.com/gtag/js?id=UA-120643530-1"></script>
+	<script>
+		window.dataLayer = window.dataLayer || [];
+		function gtag(){dataLayer.push(arguments);}
+		gtag('js', new Date());
+		gtag('config', 'UA-120643530-1');
+	</script>
+
+	<meta charset="UTF-8">
+	<title>New account</title>
+
+	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+	<script src="https://www.gstatic.com/firebasejs/5.0.4/firebase.js"></script>
+	<script>
+		// Initialize Firebase
+		var config = {
+			apiKey: "AIzaSyCJuD5ep3swJpAbNgDl_ADFEqhyA0025UQ",
+			authDomain: "pixelmeme-js.firebaseapp.com",
+			databaseURL: "https://pixelmeme-js.firebaseio.com",
+			projectId: "pixelmeme-js",
+			storageBucket: "pixelmeme-js.appspot.com",
+			messagingSenderId: "384650003816"
+		};
+		var app = firebase.initializeApp(config);
+		var db = firebase.firestore(app);
+		var storage = firebase.storage();
+	</script>
+	<script>
+		app.auth().onAuthStateChanged(function(user) {
+			if (user) {
+				if(user.displayName === null){
+					document.title = user.email;
+				} else {
+					document.title = user.displayName;
+				}
+			}
+		});
+
+		function updateEmail() {
+			let user = firebase.auth().currentUser;
+			console.log(user.uid);
+			let newEmail = $('#emailText');
+			user.updateEmail(newEmail.val()).then(function() {
+				db.collection("users").doc(user.uid).set({
+					userEmail: newEmail.val()
+				});
+			}).catch(function(error) {
+				// An error happened.
+			});
+		}
+		function updateDisplayName(){
+			let user = firebase.auth().currentUser;
+			let newDisplayName = $('#displayName');
+			user.updateProfile({
+				displayName: newDisplayName.val()
+			}).then(function() {
+				db.collection("users").doc(user.uid).update({
+					displayName: user.displayName
+				});
+			}).catch(function(error) {
+				// An error happened.
+			});
+		}
+		function updatePassword(){
+			let user = firebase.auth().currentUser;
+			let newpassword = $('#pw');
+			user.updatePassword(newpassword.val()).then(function() {
+				console.log("password updated to: " + newpassword.val() + " !!");
+			}).catch(function(error) {
+				// An error happened.
+			});
+		}
+		function deleteAccount(){
+			let bool = confirm("Are you sure you want to delete your account? " +
+				"All meme's accociated with this account will be deleted too.  " +
+				"There is no way to undo this option");
+
+
+			if(bool === true){
+				let user = firebase.auth().currentUser;
+				const userid = user.uid;
+				user.delete().then(function() {
+					window.location.replace("index.html");
+				}).catch(function(error) {
+					console.log("error: "+ error);
+				});
+				db.collection("users").doc(userid).delete().then(function() {
+					console.log("Document successfully deleted!");
+
+				}).catch(function(error) {
+					console.error("Error removing document: ", error);
+				});
+			}
+		}
+	</script>
+</head>
+<body>
+	<label for="displayName">Change display name:</label>
+	<input id="displayName">
+	<button onclick="updateDisplayName()">Submit</button><br />
+	<label for="emailText">Change email:</label>
+	<input id="emailText">
+	<button onclick="">Submit</button><br />
+	<label for="pw">Change password:</label>
+	<input id="pw">
+	<button onclick="updatePassword()">Submit</button><br />
+	<button onclick="deleteAccount()">Delete Account</button><br />
+	<a href="index.html">Back to home</a>
+</body>
+</html>

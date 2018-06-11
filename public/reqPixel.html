@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<!-- Global site tag (gtag.js) - Google Analytics -->
+	<script async src="https://www.googletagmanager.com/gtag/js?id=UA-120643530-1"></script>
+	<script>
+		window.dataLayer = window.dataLayer || [];
+		function gtag(){dataLayer.push(arguments);}
+		gtag('js', new Date());
+
+		gtag('config', 'UA-120643530-1');
+	</script>
+	<meta charset="UTF-8">
+	<title>Buy a Pixel</title>
+	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+	<script src="https://www.gstatic.com/firebasejs/4.12.1/firebase.js"></script>
+	<script src="https://www.gstatic.com/firebasejs/4.12.0/firebase-firestore.js"></script>
+	<script>
+		// Initialize Firebase
+		var config = {
+			apiKey: "AIzaSyCJuD5ep3swJpAbNgDl_ADFEqhyA0025UQ",
+			authDomain: "pixelmeme-js.firebaseapp.com",
+			databaseURL: "https://pixelmeme-js.firebaseio.com",
+			projectId: "pixelmeme-js",
+			storageBucket: "pixelmeme-js.appspot.com",
+			messagingSenderId: "384650003816"
+		};
+		var app = firebase.initializeApp(config);
+		var db = firebase.firestore(app);
+		var storage = firebase.storage();
+	</script>
+	<style>
+		div {
+			margin: 20px;
+		}
+	</style>
+</head>
+<body>
+<h1>
+	hi
+</h1>
+<form action="#" method="post" enctype="multipart/form-data">
+	Select meme to upload:
+	<input type="file" name="imageToUpload" id="imageToUpload">
+	Width:<input type="text" id="widthX" name="photoWidth" title="Width" min="0" max="999">
+	Height:<input type="text" id="heightY" name="photoHeight" title="Height" min="0" max="999">
+	<input type="radio" name="size" value="10" id="tinySq" title="tiny" checked required> 10x10
+	<input type="radio" name="size" value="20" id="smallSq" title="small"> 20x20
+	<input type="radio" name="size" value="30" id="mediumSq" title="medium"> 30x30
+	<input type="radio" name="size" value="40" id="largeSq" title="large"> 40x40
+	<input type="text" name="userid" id="userid" hidden>
+	Link:<input type="text" name="hyperLink" title="link">
+	<input type="submit" value="Buy" name="submit">
+</form>
+
+<button id="test" name="test">console</button>
+
+<img id="mememap" src="" border="2" alt="meme Map">
+
+
+<script>
+
+</script>
+
+
+<script>
+	$(function () {
+		storage.ref('meme-map/meme-map.png').getDownloadURL().then(function (value) {
+			$('#mememap').attr('src', value);
+		});
+		$('#mememap').click(function (event) {
+			var map = $('#mememap');
+			var horizontal = event.pageX - map.position().left - 2;
+			var vertical = event.pageY - map.position().top - 2.125;
+			if (horizontal < 0) {
+				horizontal = 0;
+			} else if (horizontal > 1000) {
+				horizontal = 1000;
+			}
+			if (vertical < 0) {
+				vertical = 0;
+			} else if (vertical > 1000) {
+				vertical = 1000;
+			}
+			$('#widthX').val(Math.round(horizontal));
+			$('#heightY').val(Math.round(vertical));
+		});
+		$('#tinySq').change((function () {
+			alert("tiny");
+		}));
+		$('#smallSq').change((function () {
+			alert("small");
+		}));
+		$('#mediumSq').change((function () {
+			alert("medium");
+		}));
+		$('#largeSq').change((function () {
+			alert("large");
+		}));
+	});
+	app.auth().onAuthStateChanged(function (user){
+		if(user){
+			$('#userid').val(user.uid);
+		}
+	});
+</script>
+</body>
+</html>

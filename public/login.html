@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<!-- Global site tag (gtag.js) - Google Analytics -->
+	<script async src="https://www.googletagmanager.com/gtag/js?id=UA-120643530-1"></script>
+	<script>
+		window.dataLayer = window.dataLayer || [];
+		function gtag(){dataLayer.push(arguments);}
+		gtag('js', new Date());
+
+		gtag('config', 'UA-120643530-1');
+	</script>
+	<meta charset="UTF-8">
+	<title>Log-in</title>
+	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+	<script src="https://www.gstatic.com/firebasejs/4.12.1/firebase.js"></script>
+	<script src="https://www.gstatic.com/firebasejs/4.12.0/firebase-firestore.js"></script>
+
+</head>
+<body>
+<div id="regSign">
+	<input type="text" id="email" name="email" placeholder="Email...">
+	<input type="password" id="password" name="password" placeholder="Password...">
+	<button id="signup">SignUp</button>
+	<button id="signin">SignIn</button>
+</div>
+<script src="../javascript/login.js"></script>
+</body>
+</html>

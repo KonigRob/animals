@@ -1,6 +1,15 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+	<!-- Global site tag (gtag.js) - Google Analytics -->
+	<script async src="https://www.googletagmanager.com/gtag/js?id=UA-120643530-1"></script>
+	<script>
+		window.dataLayer = window.dataLayer || [];
+		function gtag(){dataLayer.push(arguments);}
+		gtag('js', new Date());
+
+		gtag('config', 'UA-120643530-1');
+	</script>
 	<meta charset="UTF-8">
 	<title>Animal map</title>
 	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
@@ -55,13 +64,14 @@
 <div class="main">
 	<div id="bar">
 		<ul>
-			<li><a href="index.html">Home</a></li>
-			<li id="buy"><a href="#">Buy Pixel</a></li>
+			<li><a href="./">Home</a></li>
+			<li id="buy"><a href="reqPixel.html">Buy Pixel</a></li>
 			<li><a href="">FAQ</a></li>
 			<li><a href="">Contact Us</a></li>
-			<li id="login"><a href="login.html">Login</a></li>
+			<li id="login"><a href="login.html">Log in</a></li>
+			<li id="signup"><a href="login.html">Sign up</a></li>
+			<li id="account"><a id="accountText" href="account.html">Account</a></li>
 			<li id="signout"><button id="btn-signout">Sign-out</button></li>
-			<li id="account"><a href="#">Account</a></li>
 		</ul>
 	</div>
 	<div id="memelist">
@@ -75,23 +85,34 @@
 <script>
 	app.auth().onAuthStateChanged(function(user) {
 
-		var so = $('#signout');
-		var li = $('#login');
-		var ac = $('#account');
-		var by = $('#buy');
+		let so = $('#signout');
+		let li = $('#login');
+		let su = $('#signup');
+		let ac = $('#account');
+		let act = $('#accountText');
+		let by = $('#buy');
 		if (user) {
-			var docRef = db.collection("users").doc(user.uid);
+			let docRef = db.collection("users").doc(user.uid);
 			docRef.get().then(function(data){
 				console.log(data);
 			});
+			console.log(user);
+			console.log(user.displayName);
 			so.show();
 			ac.show();
+			if(user.displayName === null){
+				act.text(user.email);
+			} else {
+				act.text(user.displayName);
+			}
 			by.show();
+			su.hide();
 			li.hide();
 		} else {
 			so.hide();
 			ac.hide();
 			by.hide();
+			su.show();
 			li.show();
 		}
 	});
