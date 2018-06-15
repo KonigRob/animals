@@ -73,11 +73,13 @@
 			<li id="signout"><button id="btn-signout">Sign-out</button></li>
 		</ul>
 	</div>
-	<div id="memelist">
-		<map name="memeMap" id="map">
-			<area shape="rect" coords="10, 10, 10, 10" href="" title="Addedme">
-		</map>
-		<img id="mememap" src="" width="1000" height="1000" alt="meme Map">
+	<div>
+		<h2>What is this site?</h2>
+		<article>This site is just a project I'm working on.
+			It's far from complete, and honestly, if it gets more traffic than my blog,
+			that would be cool!</article>
+		<h2>Who am I?</h2>
+		<article>I'm just a BCIT student, about to enter his 4th term!</article>
 	</div>
 </div>
 <noscript><p>please enable javascript</p></noscript>
@@ -118,11 +120,7 @@
 	$('#btn-signout').click(function(){
 		app.auth().signOut();
 	});
-	$(function(){
-		storage.ref('meme-map/meme-map.png').getDownloadURL().then(function (value) {
-			$('#mememap').attr('src', value + "");
-		});
-	});
+
 </script>
 </body>
 </html>
