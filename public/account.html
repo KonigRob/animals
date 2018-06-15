@@ -30,15 +30,20 @@
 	</script>
 	<script>
 		app.auth().onAuthStateChanged(function(user) {
+			let isEmailVerified = $('#isEmailVerified');
 			if (user) {
 				if(user.displayName === null){
 					document.title = user.email;
 				} else {
 					document.title = user.displayName;
 				}
+				if(user.emailVerified === false){
+					isEmailVerified.show();
+				} else {
+					isEmailVerified.hide();
+				}
 			}
 		});
-
 		function updateEmail() {
 			let user = firebase.auth().currentUser;
 			console.log(user.uid);
@@ -47,6 +52,7 @@
 				db.collection("users").doc(user.uid).set({
 					userEmail: newEmail.val()
 				});
+				newEmail.val("");
 			}).catch(function(error) {
 				// An error happened.
 			});
@@ -60,6 +66,7 @@
 				db.collection("users").doc(user.uid).update({
 					displayName: user.displayName
 				});
+				newDisplayName.val("");
 			}).catch(function(error) {
 				// An error happened.
 			});
@@ -69,31 +76,50 @@
 			let newpassword = $('#pw');
 			user.updatePassword(newpassword.val()).then(function() {
 				console.log("password updated to: " + newpassword.val() + " !!");
+				newpassword.val("");
 			}).catch(function(error) {
 				// An error happened.
 			});
 		}
 		function deleteAccount(){
-			let bool = confirm("Are you sure you want to delete your account? " +
+			let user = firebase.auth().currentUser;
+			const userid = user.uid;
+			let bool = prompt("Are you sure you want to delete your account? " +
 				"All meme's accociated with this account will be deleted too.  " +
-				"There is no way to undo this option");
+				"There is no way to undo this option." +
+				"Please enter your password to continue",
+				"");
+				app.auth().signInWithEmailAndPassword(user.email, bool).then(function(){
+					db.collection("users").doc(userid).delete().then(function() {
+						console.log("user deleted from docs!");
+						user.delete().then(function() {
+							console.log("user deleted from auth")
+							// window.location.replace("index.html");
+						}).catch(function(error) {
+							console.log(error);
+						});
+					}).catch(function(error) {
+						console.error("Error removing document: ", error);
+					});
 
-
-			if(bool === true){
-				let user = firebase.auth().currentUser;
-				const userid = user.uid;
-				user.delete().then(function() {
-					window.location.replace("index.html");
-				}).catch(function(error) {
-					console.log("error: "+ error);
+				}).catch(function (error) {
+					let errorCode = error.code;
+					let errorMessage = error.message;
+					console.log("EC: ", errorCode, " EM: ", errorMessage);
+					if (errorCode === 'auth/wrong-password' || errorCode === 'auth/user-not-found') {
+						alert(errorCode);
+					} else {
+						alert(errorMessage);
+					}
 				});
-				db.collection("users").doc(userid).delete().then(function() {
-					console.log("Document successfully deleted!");
-
-				}).catch(function(error) {
-					console.error("Error removing document: ", error);
-				});
-			}
+		}
+		function verifyEmail(){
+			let user = firebase.auth().currentUser;
+			user.sendEmailVerification().then(function() {
+				console.log("Email sent to: " + user.email + ".")
+			}).catch(function(error) {
+				// An error happened.
+			});
 		}
 	</script>
 </head>
@@ -103,10 +129,11 @@
 	<button onclick="updateDisplayName()">Submit</button><br />
 	<label for="emailText">Change email:</label>
 	<input id="emailText">
-	<button onclick="">Submit</button><br />
+	<button onclick="updateEmail()">Submit</button><br />
 	<label for="pw">Change password:</label>
 	<input id="pw">
 	<button onclick="updatePassword()">Submit</button><br />
+	<button id="isEmailVerified" onclick="verifyEmail()">Verify Email</button><br />
 	<button onclick="deleteAccount()">Delete Account</button><br />
 	<a href="index.html">Back to home</a>
 </body>

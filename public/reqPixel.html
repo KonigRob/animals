@@ -39,19 +39,22 @@
 <h1>
 	hi
 </h1>
-<form action="#" method="post" enctype="multipart/form-data">
+<!--<form action="javascript:" onsubmit="uploadFile(this);">-->
+<div>
 	Select meme to upload:
 	<input type="file" name="imageToUpload" id="imageToUpload">
-	Width:<input type="text" id="widthX" name="photoWidth" title="Width" min="0" max="999">
-	Height:<input type="text" id="heightY" name="photoHeight" title="Height" min="0" max="999">
+	Width:<input type="number" id="widthX" name="photoWidth" title="Width" min="0" max="999">
+	Height:<input type="number" id="heightY" name="photoHeight" title="Height" min="0" max="999">
 	<input type="radio" name="size" value="10" id="tinySq" title="tiny" checked required> 10x10
 	<input type="radio" name="size" value="20" id="smallSq" title="small"> 20x20
 	<input type="radio" name="size" value="30" id="mediumSq" title="medium"> 30x30
 	<input type="radio" name="size" value="40" id="largeSq" title="large"> 40x40
 	<input type="text" name="userid" id="userid" hidden>
 	Link:<input type="text" name="hyperLink" title="link">
-	<input type="submit" value="Buy" name="submit">
-</form>
+	<button onclick="uploadFile()">Submit</button>
+	<!--<input type="submit" value="Buy" name="submit">-->
+<!--</form>-->
+</div>
 
 <button id="test" name="test">console</button>
 
@@ -64,6 +67,59 @@
 
 
 <script>
+	function uploadFile(){
+		let x = $('#widthX');
+		let y = $('#heightY');
+		let ten = $('#tinySq');
+		if(ten.prop("checked")) {
+			console.log(ten.val());
+		}
+		if($.isNumeric(x.val())){
+			console.log('x coord is: ' + x.val());
+		}
+		if($.isNumeric(y.val())){
+			console.log('y coord is: ' + y.val())
+		}
+		let filename = $('#imageToUpload').prop('files')[0];
+		let user = firebase.auth().currentUser;
+		let uploadTask = firebase.storage().ref('requested-memes/' + user.uid + "_" + $.now()).put(filename);
+		uploadTask.on(firebase.storage.TaskEvent.STATE_CHANGED, // or 'state_changed'
+			function(snapshot) {
+				// Get task progress, including the number of bytes uploaded and the total number of bytes to be uploaded
+				let progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+				console.log('Upload is ' + progress + '% done');
+				switch (snapshot.state) {
+					case firebase.storage.TaskState.PAUSED: // or 'paused'
+						console.log('Upload is paused');
+						break;
+					case firebase.storage.TaskState.RUNNING: // or 'running'
+						console.log('Upload is running');
+						break;
+				}
+			}, function(error) {
+
+				// A full list of error codes is available at
+				// https://firebase.google.com/docs/storage/web/handle-errors
+				switch (error.code) {
+					case 'storage/unauthorized':
+						// User doesn't have permission to access the object
+						break;
+
+					case 'storage/canceled':
+						// User canceled the upload
+						break;
+
+					case 'storage/unknown':
+						// Unknown error occurred, inspect error.serverResponse
+						break;
+				}
+			}, function() {
+				// Upload completed successfully, now we can get the download URL
+				uploadTask.snapshot.ref.getDownloadURL().then(function(downloadURL) {
+					console.log('File available at', downloadURL);
+				});
+			});
+	}
 	$(function () {
 		storage.ref('meme-map/meme-map.png').getDownloadURL().then(function (value) {
 			$('#mememap').attr('src', value);
@@ -85,22 +141,24 @@
 			$('#widthX').val(Math.round(horizontal));
 			$('#heightY').val(Math.round(vertical));
 		});
-		$('#tinySq').change((function () {
-			alert("tiny");
-		}));
-		$('#smallSq').change((function () {
-			alert("small");
-		}));
-		$('#mediumSq').change((function () {
-			alert("medium");
-		}));
-		$('#largeSq').change((function () {
-			alert("large");
-		}));
+		// $('#tinySq').change((function () {
+		// 	alert("tiny");
+		// }));
+		// $('#smallSq').change((function () {
+		// 	alert("small");
+		// }));
+		// $('#mediumSq').change((function () {
+		// 	alert("medium");
+		// }));
+		// $('#largeSq').change((function () {
+		// 	alert("large");
+		// }));
 	});
 	app.auth().onAuthStateChanged(function (user){
 		if(user){
 			$('#userid').val(user.uid);
+		} else {
+			window.location.replace("index.html");
 		}
 	});
 </script>
