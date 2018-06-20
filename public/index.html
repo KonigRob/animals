@@ -91,12 +91,12 @@
 		let act = $('#accountText');
 		let by = $('#buy');
 		if (user) {
-			let docRef = db.collection("users").doc(user.uid);
-			docRef.get().then(function(data){
-				console.log(data);
-			});
-			console.log(user);
-			console.log(user.displayName);
+			// let docRef = db.collection("users").doc(user.uid);
+			// docRef.get().then(function(data){
+			// 	console.log(data);
+			// });
+			// console.log(user);
+			// console.log(user.displayName);
 			so.show();
 			ac.show();
 			if(user.displayName === null){

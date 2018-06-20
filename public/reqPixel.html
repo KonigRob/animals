@@ -50,7 +50,7 @@
 	<input type="radio" name="size" value="30" id="mediumSq" title="medium"> 30x30
 	<input type="radio" name="size" value="40" id="largeSq" title="large"> 40x40
 	<input type="text" name="userid" id="userid" hidden>
-	Link:<input type="text" name="hyperLink" title="link">
+	Link:<input type="text" id="hyperLink" title="link">
 	<button onclick="uploadFile()">Submit</button>
 	<!--<input type="submit" value="Buy" name="submit">-->
 <!--</form>-->
@@ -70,9 +70,16 @@
 	function uploadFile(){
 		let x = $('#widthX');
 		let y = $('#heightY');
-		let ten = $('#tinySq');
-		if(ten.prop("checked")) {
-			console.log(ten.val());
+		let link = $('#hyperLink').val();
+		let size = 10;
+		if($('#tinySq').prop("checked")) {
+			size = 10;
+		} else if($('#smallSq').prop("checked")){
+			size = 20;
+		} else if($("#mediumSq").prop("checked")){
+			size = 30;
+		} else {
+			size = 40;
 		}
 		if($.isNumeric(x.val())){
 			console.log('x coord is: ' + x.val());
@@ -82,7 +89,8 @@
 		}
 		let filename = $('#imageToUpload').prop('files')[0];
 		let user = firebase.auth().currentUser;
-		let uploadTask = firebase.storage().ref('requested-memes/' + user.uid + "_" + $.now()).put(filename);
+		const time = $.now();
+		let uploadTask = firebase.storage().ref('requested-memes/' + user.uid + "_" + time).put(filename);
 		uploadTask.on(firebase.storage.TaskEvent.STATE_CHANGED, // or 'state_changed'
 			function(snapshot) {
 				// Get task progress, including the number of bytes uploaded and the total number of bytes to be uploaded
@@ -116,8 +124,33 @@
 			}, function() {
 				// Upload completed successfully, now we can get the download URL
 				uploadTask.snapshot.ref.getDownloadURL().then(function(downloadURL) {
-					console.log('File available at', downloadURL);
+					db.collection("requested-memes").doc((user.uid+"_"+time).toString()).set({
+						userID:user.uid,
+						time:time,
+						fileLink: downloadURL,
+						x:x.val(),
+						y:y.val(),
+						sizeOfSquare:size,
+						website:link
+					});
 				});
+				// uploadTask.snapshot.ref.getDownloadURL().then(function(downloadURL) {
+				// 	var docRef = db.collection("users").doc(user.uid);
+				// 	let requestion = {
+				// 		[time]:
+				// 		{
+				// 			location: downloadURL,
+				// 			x: x.val(),
+				// 			y: y.val(),
+				// 			sizeOfSquare: size,
+				// 			website: link
+				// 		}
+				// 	};
+				// 	db.collection("users").doc(user.uid).update(requestion).then(function () {
+				// 		console.log("Successfully written to database")
+				// 	});
+				// 	console.log('File available at', downloadURL);
+				// });
 			});
 	}
 	$(function () {

@@ -113,14 +113,47 @@
 					}
 				});
 		}
-		function verifyEmail(){
+		function verifyEmail() {
 			let user = firebase.auth().currentUser;
-			user.sendEmailVerification().then(function() {
+			user.sendEmailVerification().then(function () {
 				console.log("Email sent to: " + user.email + ".")
-			}).catch(function(error) {
+			}).catch(function (error) {
 				// An error happened.
 			});
 		}
+		function clickedYes(timestamp){
+			// const trueuid = userID;
+			// const timestamp = data.id;
+			// const userid = data.data();
+			alert("Clicked yes! " + timestamp);
+		}
+		function clickedNo(timestamp){
+			// const timestamp = data.id;
+			// const userid = data.data();
+			alert("Clicked no! " + timestamp);
+		}
+		$(function () {
+			let adminWindow = $('#adminPanelList');
+			db.collection("requested-memes").get().then(function (querySnapshot) {
+				querySnapshot.forEach(function (doc) {
+					// console.log("id: ", doc.id);
+					// console.log("fileLink: ", doc.data().fileLink);
+					// console.log('<li><img src="'+doc.data().fileLink+'"></li>');
+					const uid = "butter";
+					let imageOfMeme = '<img width="200px" src="'+doc.data().fileLink+'">';
+					let userLink = '<a href="'+doc.data().website+'" target="_blank">website: "'+doc.data().website+'"</a>';
+					// let breakSpaces = '<br /><br />';
+					let yesBtn = '<button onclick="clickedYes('+doc.id+')">Yes</button>';
+					let noBtn = '<button onclick="clickedNo('+doc.id+')">No</button>';
+					console.log(doc.id);
+					adminWindow.prepend('<li>'+imageOfMeme+userLink+yesBtn+noBtn+'</li>');
+				});
+			});
+			// $('#adminPanel').html('<h1>Hello world</h1>');
+			// storage.ref('requested-memes').getDownloadURL().then(function (value) {
+			// 	console.log(value);
+			// });
+		});
 	</script>
 </head>
 <body>
@@ -135,6 +168,10 @@
 	<button onclick="updatePassword()">Submit</button><br />
 	<button id="isEmailVerified" onclick="verifyEmail()">Verify Email</button><br />
 	<button onclick="deleteAccount()">Delete Account</button><br />
+	<div id="adminPanel"> <!-- Creating the table of info and pictures  MAKE this hidden by default -->
+		<ul id="adminPanelList">
+		</ul>
+	</div>
 	<a href="index.html">Back to home</a>
 </body>
 </html>
