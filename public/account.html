@@ -142,7 +142,20 @@
 						alert(doc.id);
 					});
 					$('.noClick'+i).click(function () {
-						alert(doc.id);
+						const id = doc.id;
+						let imageRef = storage.ref().child('requested-memes/'+id);
+						imageRef.delete().then(function () {
+							// Success
+							db.collection('requested-memes').doc(id).delete().then(function () {
+								console.log("Domcument deleted");
+								window.location.reload();
+							}).catch(function (error) {
+								console.log("Error removing document: ", error);
+							});
+							console.log("image deleted");
+						}).catch(function (error) {
+							console.log("Error removing image: ", error);
+						});
 					});
 					i++;
 				});
