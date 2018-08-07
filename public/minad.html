@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>Title</title>
+	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+	<script src="https://www.gstatic.com/firebasejs/5.0.4/firebase.js"></script>
+	<script>
+		// Initialize Firebase
+		var config = {
+			apiKey: "AIzaSyCJuD5ep3swJpAbNgDl_ADFEqhyA0025UQ",
+			authDomain: "pixelmeme-js.firebaseapp.com",
+			databaseURL: "https://pixelmeme-js.firebaseio.com",
+			projectId: "pixelmeme-js",
+			storageBucket: "pixelmeme-js.appspot.com",
+			messagingSenderId: "384650003816"
+		};
+		var app = firebase.initializeApp(config);
+		var db = firebase.firestore(app);
+		var storage = firebase.storage();
+		var functions = firebase.functions();
+	</script>
+	<script>
+		app.auth().onAuthStateChanged(function(user) {
+			if(user){
+				let whoAmI = functions.httpsCallable('whoAmI');
+				whoAmI({uid:user.uid}).then(function (result) {
+					console.log("This is an admin account?: ", result.data.you);
+					if(result.data.you === true){
+						let j = 0;
+						let adminWindow = $('#adminPanelList');
+						db.collection("requested-memes").get().then(function (querySnapshot) {
+							querySnapshot.forEach(function (doc) {
+								const i = j;
+								let date = new Date(doc.data().time);
+								let timeSpot = '<p>'+date+'</p>';
+								let imageOfMeme = '<img width="200px" src="'+doc.data().fileLink+'">';
+								let userLink = '<a href='+doc.data().website.toString()+' target="_blank">'+doc.data().website+'</a>';
+								// let breakSpaces = '<br /><br />';
+								let userID = doc.data().userID;
+								let user = '<p>'+userID+'</p>';
+								let yesBtn = '<button id="yesClick'+i+'" hidden>Yes</button>';
+								let noBtn = '<button id="noClick'+i+'">No</button>';
+								let checkBtn = '<button id="checkClick'+i+'">Check Square</button>';
+								adminWindow.prepend('<li id="item'+i+'" style="list-style-type: none;padding-bottom: 10px">'
+									+imageOfMeme+timeSpot+user+userLink+yesBtn+noBtn+checkBtn+'</li>');
+
+								function nope(id, i){
+									Promise.all([
+										storage.ref().child('requested-memes/'+id).delete(),
+										db.collection('requested-memes').doc(id).delete()
+									]).then(()=>{
+										$('#item'+i).remove();
+									}).catch((error)=>{
+										console.log("Error removing image: ", error);
+									});
+								}
+								$('#checkClick'+i).click(function () {
+									let checkPixels = functions.httpsCallable('checkPixels');
+									checkPixels({
+										x:doc.data().x,
+										y:doc.data().y,
+										size:doc.data().sizeOfSquare
+									}).then(function (result) {
+										console.log("Check?: ", result.data.check, " for image: ", i);
+										if(result.data.check === true){
+											$('#yesClick'+i).show();
+										}
+									}).catch(function (error) {
+										console.log("Check fail: ", error);
+									});
+								});
+								$('#yesClick'+i).click(function () {
+									alert("this is the id: " + doc.id +
+										" And this is the x: " + doc.data().x +
+										", and y: " + doc.data().y +
+										", size: " + doc.data().sizeOfSquare);
+									let memeApproval = functions.httpsCallable('memeApproval');
+									memeApproval({
+										id:doc.id,
+										size:doc.data().sizeOfSquare,
+										x:doc.data().x,
+										y:doc.data().y,
+										user:doc.data().userID,
+										website:doc.data().website,
+										timestamp:doc.data().time
+									}).then(function (result) {
+										if(result.data.pass === true){
+											nope(doc.id, i);
+											console.log("success for " + i);
+										}
+									}).catch(function (error) {
+										// Getting the Error details.
+										console.error('There was an error when calling the Cloud Function for Approval: ', error);
+									});
+								});
+								$('#noClick'+i).click(function () {
+									nope(doc.id, i);
+								});
+								j++;
+							});
+						});
+					} else {
+						//window.location.replace("index.html");
+					}
+				}).catch(function (error) {
+					console.error("There was an error calling checking the ID of the admin: ", error);
+				});
+
+			} else {
+				//window.location.replace("index.html");
+			}
+		});
+	</script>
+</head>
+<body>
+<div id="adminPanel"> <!-- Creating the table of info and pictures  MAKE this hidden by default -->
+	<ul id="adminPanelList">
+	</ul>
+</div>
+<a href="index.html">Back to home</a>
+</body>
+</html>

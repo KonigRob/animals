@@ -4,7 +4,11 @@
 	<script async src="https://www.googletagmanager.com/gtag/js?id=UA-120643530-1"></script>
 	<script>
 		window.dataLayer = window.dataLayer || [];
-		function gtag(){dataLayer.push(arguments);}
+
+		function gtag() {
+			dataLayer.push(arguments);
+		}
+
 		gtag('js', new Date());
 		gtag('config', 'UA-120643530-1');
 	</script>
@@ -27,62 +31,95 @@
 		var app = firebase.initializeApp(config);
 		var db = firebase.firestore(app);
 		var storage = firebase.storage();
-		let functions = firebase.functions();
+		var functions = firebase.functions();
 	</script>
 	<script>
-		app.auth().onAuthStateChanged(function(user) {
+		app.auth().onAuthStateChanged(function (user) {
 			let isEmailVerified = $('#isEmailVerified');
+			let userApprovalList = $('#userApprovalList');
 			if (user) {
-				if(user.displayName === null){
+				if (user.displayName === null) {
 					document.title = user.email;
 				} else {
 					document.title = user.displayName;
 				}
-				if(user.emailVerified === false){
+				if (user.emailVerified === false) {
 					isEmailVerified.show();
 				} else {
 					isEmailVerified.hide();
 				}
+				let j = 0;
+				db.collection("requested-memes").get().then(function (querySnapshot) {
+					querySnapshot.forEach(function (doc) {
+						if (doc.id.includes(user.uid)) {
+							const i = j;
+							let imageOfMeme = '<img width="200px" src="' + doc.data().fileLink + '">';
+							let userLink = '<a href=' + doc.data().website.toString() + ' target="_blank">' + doc.data().website + '</a>';
+							let date = new Date(doc.data().time);
+							let timeSpot = '<p>' + date + '</p>';
+							userApprovalList.prepend('<li id="item' + i + '" style="list-style-type: none;padding-bottom: 10px">'
+								+ imageOfMeme + timeSpot + userLink + '</li>');
+						}
+					});
+				});
+				j = 0;
+				db.collection("added-memes").get().then(function (qs) {
+					qs.forEach(function (doc) {
+						if (doc.id.includes(user.uid)) {
+							const i = j;
+							let imageOfMeme = '<img width="200px" src="' + doc.data().fileLink + '">';
+							let userLink = '<a href=' + doc.data().website.toString() + ' target="_blank">' + doc.data().website + '</a>';
+							let date = new Date(doc.data().time);
+							let timeSpot = '<p>' + date + '</p>';
+							userApprovalList.prepend('<li id="item' + i + '" style="list-style-type: none;padding-bottom: 10px">'
+								+ imageOfMeme + timeSpot + userLink + '</li>');
+						}
+					});
+				});
 			}
 		});
+
 		function updateEmail() {
 			let user = firebase.auth().currentUser;
 			console.log(user.uid);
 			let newEmail = $('#emailText');
-			user.updateEmail(newEmail.val()).then(function() {
+			user.updateEmail(newEmail.val()).then(function () {
 				db.collection("users").doc(user.uid).set({
 					userEmail: newEmail.val()
 				});
 				newEmail.val("");
-			}).catch(function(error) {
+			}).catch(function (error) {
 				// An error happened.
 			});
 		}
-		function updateDisplayName(){
+
+		function updateDisplayName() {
 			let user = firebase.auth().currentUser;
 			let newDisplayName = $('#displayName');
 			user.updateProfile({
 				displayName: newDisplayName.val()
-			}).then(function() {
+			}).then(function () {
 				db.collection("users").doc(user.uid).update({
 					displayName: user.displayName
 				});
 				newDisplayName.val("");
-			}).catch(function(error) {
+			}).catch(function (error) {
 				// An error happened.
 			});
 		}
-		function updatePassword(){
+
+		function updatePassword() {
 			let user = firebase.auth().currentUser;
 			let newpassword = $('#pw');
-			user.updatePassword(newpassword.val()).then(function() {
+			user.updatePassword(newpassword.val()).then(function () {
 				console.log("password updated to: " + newpassword.val() + " !!");
 				newpassword.val("");
-			}).catch(function(error) {
+			}).catch(function (error) {
 				// An error happened.
 			});
 		}
-		function deleteAccount(){
+
+		function deleteAccount() {
 			let user = firebase.auth().currentUser;
 			const userid = user.uid;
 			let bool = prompt("Are you sure you want to delete your account? " +
@@ -90,30 +127,31 @@
 				"There is no way to undo this option." +
 				"Please enter your password to continue",
 				"");
-				app.auth().signInWithEmailAndPassword(user.email, bool).then(function(){
-					db.collection("users").doc(userid).delete().then(function() {
-						console.log("user deleted from docs!");
-						user.delete().then(function() {
-							console.log("user deleted from auth")
-							// window.location.replace("index.html");
-						}).catch(function(error) {
-							console.log(error);
-						});
-					}).catch(function(error) {
-						console.error("Error removing document: ", error);
+			app.auth().signInWithEmailAndPassword(user.email, bool).then(function () {
+				db.collection("users").doc(userid).delete().then(function () {
+					console.log("user deleted from docs!");
+					user.delete().then(function () {
+						console.log("user deleted from auth")
+						// window.location.replace("index.html");
+					}).catch(function (error) {
+						console.log(error);
 					});
-
 				}).catch(function (error) {
-					let errorCode = error.code;
-					let errorMessage = error.message;
-					console.log("EC: ", errorCode, " EM: ", errorMessage);
-					if (errorCode === 'auth/wrong-password' || errorCode === 'auth/user-not-found') {
-						alert(errorCode);
-					} else {
-						alert(errorMessage);
-					}
+					console.error("Error removing document: ", error);
 				});
+
+			}).catch(function (error) {
+				let errorCode = error.code;
+				let errorMessage = error.message;
+				console.log("EC: ", errorCode, " EM: ", errorMessage);
+				if (errorCode === 'auth/wrong-password' || errorCode === 'auth/user-not-found') {
+					alert(errorCode);
+				} else {
+					alert(errorMessage);
+				}
+			});
 		}
+
 		function verifyEmail() {
 			let user = firebase.auth().currentUser;
 			user.sendEmailVerification().then(function () {
@@ -122,67 +160,35 @@
 				// An error happened.
 			});
 		}
-		$(function () {
-			let i = 0;
-			let adminWindow = $('#adminPanelList');
-			db.collection("requested-memes").get().then(function (querySnapshot) {
-				querySnapshot.forEach(function (doc) {
-					// console.log("id: ", doc.id);
-					// console.log("fileLink: ", doc.data().fileLink);
-					// console.log('<li><img src="'+doc.data().fileLink+'"></li>');
-					const uid = "butter";
-					let imageOfMeme = '<img width="200px" src="'+doc.data().fileLink+'">';
-					let userLink = '<a href="'+doc.data().website+'" target="_blank">website: "'+doc.data().website+'"</a>';
-					// let breakSpaces = '<br /><br />';
-					let yesBtn = '<button class="yesClick'+i+'">Yes</button>';
-					let noBtn = '<button class="noClick'+i+'">No</button>';
-					// console.log(doc.id);
-					adminWindow.prepend('<li>'+imageOfMeme+userLink+yesBtn+noBtn+'</li>');
-					$('.yesClick'+i).click(function () {
-						alert(doc.id);
-					});
-					$('.noClick'+i).click(function () {
-						const id = doc.id;
-						let imageRef = storage.ref().child('requested-memes/'+id);
-						imageRef.delete().then(function () {
-							// Success
-							db.collection('requested-memes').doc(id).delete().then(function () {
-								console.log("Domcument deleted");
-								window.location.reload();
-							}).catch(function (error) {
-								console.log("Error removing document: ", error);
-							});
-							console.log("image deleted");
-						}).catch(function (error) {
-							console.log("Error removing image: ", error);
-						});
-					});
-					i++;
-				});
-			});
-			// $('#adminPanel').html('<h1>Hello world</h1>');
-			// storage.ref('requested-memes').getDownloadURL().then(function (value) {
-			// 	console.log(value);
-			// });
-		});
 	</script>
 </head>
 <body>
-	<label for="displayName">Change display name:</label>
-	<input id="displayName">
-	<button onclick="updateDisplayName()">Submit</button><br />
-	<label for="emailText">Change email:</label>
-	<input id="emailText">
-	<button onclick="updateEmail()">Submit</button><br />
-	<label for="pw">Change password:</label>
-	<input id="pw">
-	<button onclick="updatePassword()">Submit</button><br />
-	<button id="isEmailVerified" onclick="verifyEmail()">Verify Email</button><br />
-	<button onclick="deleteAccount()">Delete Account</button><br />
-	<div id="adminPanel"> <!-- Creating the table of info and pictures  MAKE this hidden by default -->
-		<ul id="adminPanelList">
-		</ul>
-	</div>
-	<a href="index.html">Back to home</a>
+<label for="displayName">Change display name:</label>
+<input id="displayName">
+<button onclick="updateDisplayName()">Submit</button>
+<br/>
+<label for="emailText">Change email:</label>
+<input id="emailText">
+<button onclick="updateEmail()">Submit</button>
+<br/>
+<label for="pw">Change password:</label>
+<input id="pw">
+<button onclick="updatePassword()">Submit</button>
+<br/>
+<button id="isEmailVerified" onclick="verifyEmail()">Verify Email</button>
+<br/>
+<button onclick="deleteAccount()">Delete Account</button>
+<br/>
+
+<a href="index.html">Back to home</a>
+<div id="userPanel"> <!-- Creating the table of info and pictures  MAKE this hidden by default -->
+	<h2>Waiting approval</h2>
+	<ul id="userApprovalList">
+	</ul>
+	<h2>Added</h2>
+	<hr>
+	<ul id="userAddedList">
+	</ul>
+</div>
 </body>
 </html>

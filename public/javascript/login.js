@@ -1,4 +1,4 @@
-var config = {
+let config = {
 	apiKey: "AIzaSyCJuD5ep3swJpAbNgDl_ADFEqhyA0025UQ",
 	authDomain: "pixelmeme-js.firebaseapp.com",
 	databaseURL: "https://pixelmeme-js.firebaseio.com",
@@ -7,14 +7,14 @@ var config = {
 	messagingSenderId: "384650003816"
 };
 
-var app = firebase.initializeApp(config);
-var db = firebase.firestore(app);
-var storage = firebase.storage();
+let app = firebase.initializeApp(config);
+let db = firebase.firestore(app);
+let storage = firebase.storage();
 
 
 $('#signin').click(function () {
-	var email = $('#email').val();
-	var password = $('#password').val();
+	let email = $('#email').val();
+	let password = $('#password').val();
 	if (email.length < 4) {
 		alert('Please enter an email address.');
 		return;
@@ -24,20 +24,18 @@ $('#signin').click(function () {
 		return;
 	}
 	app.auth().signInWithEmailAndPassword(email, password).catch(function (error) {
-		var errorCode = error.code;
-		var errorMessage = error.message;
-		console.log("EC: ", errorCode, " EM: ", errorMessage);
-		if (errorCode === 'auth/wrong-password' || errorCode === 'auth/user-not-found') {
-			alert(errorCode);
+		console.log("EC: ", error.code, " EM: ", error.message);
+		if (error.code === 'auth/wrong-password' || error.code === 'auth/user-not-found') {
+			alert(error.code);
 		} else {
-			alert(errorMessage);
+			alert(error.message);
 		}
 	});
 });
 
 $('#signup').click(function () {
-	var email = $('#email').val();
-	var password = $('#password').val();
+	let email = $('#email').val();
+	let password = $('#password').val();
 	if (email.length < 4) {
 		alert('Please enter an email address.');
 		return;
@@ -47,14 +45,12 @@ $('#signup').click(function () {
 		return;
 	}
 	app.auth().createUserWithEmailAndPassword(email, password).catch(function (error) {
-		var errorCode = error.code;
-		var errorMessage = error.message;
-		if (errorCode === 'auth/weak-password') {
+		if (error.code === 'auth/weak-password') {
 			alert('The password is too weak.');
-		} else if(errorCode === 'auth/email-already-in-use'){
+		} else if(error.code === 'auth/email-already-in-use'){
 			alert('This email is already in use');
 		}else {
-			alert(errorMessage);
+			alert(error.message);
 		}
 		console.log(error);
 	});
@@ -62,12 +58,9 @@ $('#signup').click(function () {
 
 app.auth().onAuthStateChanged(function (user) {
 	if (user) {
-		console.log("user signed in!");
-		console.log(user.uid);
-		var docRef = db.collection("users").doc(user.uid);
-		docRef.get().then(function (doc) {
+		console.log(user.uid, " signed in!");
+		db.collection("users").doc(user.uid).get().then(function (doc) {
 			if (doc.exists) {
-				console.log("Document data:", doc.data());
 				window.location.replace("index.html");
 			} else {
 				console.log("No such document!");

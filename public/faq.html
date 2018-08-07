@@ -5,7 +5,11 @@
 	<script async src="https://www.googletagmanager.com/gtag/js?id=UA-120643530-1"></script>
 	<script>
 		window.dataLayer = window.dataLayer || [];
-		function gtag(){dataLayer.push(arguments);}
+
+		function gtag() {
+			dataLayer.push(arguments);
+		}
+
 		gtag('js', new Date());
 		gtag('config', 'UA-120643530-1');
 	</script>
@@ -15,7 +19,7 @@
 	<script src="https://www.gstatic.com/firebasejs/5.0.4/firebase.js"></script>
 	<script>
 		// Initialize Firebase
-		var config = {
+		let config = {
 			apiKey: "AIzaSyCJuD5ep3swJpAbNgDl_ADFEqhyA0025UQ",
 			authDomain: "pixelmeme-js.firebaseapp.com",
 			databaseURL: "https://pixelmeme-js.firebaseio.com",
@@ -23,34 +27,39 @@
 			storageBucket: "pixelmeme-js.appspot.com",
 			messagingSenderId: "384650003816"
 		};
-		var app = firebase.initializeApp(config);
-		var db = firebase.firestore(app);
-		var storage = firebase.storage();
+		let app = firebase.initializeApp(config);
+		let db = firebase.firestore(app);
+		let storage = firebase.storage();
 	</script>
 	<style type="text/css">
 		.main {
 			text-align: center;
 			background-color: sienna;
 		}
+
 		#bar ul {
 			list-style-type: none;
 			margin: 0;
 			padding: 0;
 			overflow: hidden;
 		}
+
 		#bar ul li {
 			display: inline;
 		}
-		#bar ul li a{
+
+		#bar ul li a {
 			color: cornsilk;
 			text-align: center;
 			padding: 14px 16px;
 			text-decoration: none;
 			background-color: darkslategrey;
 		}
+
 		#bar ul li a:hover {
 			background-color: cadetblue;
 		}
+
 		#memelist {
 
 		}
@@ -70,21 +79,36 @@
 			<li id="login"><a href="login.html">Log in</a></li>
 			<li id="signup"><a href="login.html">Sign up</a></li>
 			<li id="account"><a id="accountText" href="account.html">Account</a></li>
-			<li id="signout"><button id="btn-signout">Sign-out</button></li>
+			<li id="signout">
+				<button id="btn-signout">Sign-out</button>
+			</li>
 		</ul>
 	</div>
 	<div>
+		<h2>How does the website flow?</h2>
+		<article>Create an account, buy a pixel, wait for approval, see your meme among others.</article>
+		<h2></h2>
+		<article></article>
+		<h2>How can I buy a pixel?</h2>
+		<article>Create or sign in with your account, then you'll be able to buy a pixel.</article>
+		<h2>How do I choose where to buy a pixel</h2>
+		<article>Upload your image, and click on the map to choose where you want to have your image.</article>
+		<h2>I've uploaded my image, why isn't it on the map yet?</h2>
+		<article>Images need to go through an approval process before they're added to the map.</article>
+		<h2></h2>
+		<article></article>
 		<h2>What is this site?</h2>
 		<article>This site is just a project I'm working on.
 			It's far from complete, and honestly, if it gets more traffic than my blog,
-			that would be cool!</article>
+			that would be cool!
+		</article>
 		<h2>Who am I?</h2>
 		<article>I'm just a BCIT student, about to enter his 4th term!</article>
 	</div>
 </div>
 <noscript><p>please enable javascript</p></noscript>
 <script>
-	app.auth().onAuthStateChanged(function(user) {
+	app.auth().onAuthStateChanged(function (user) {
 
 		let so = $('#signout');
 		let li = $('#login');
@@ -94,14 +118,14 @@
 		let by = $('#buy');
 		if (user) {
 			let docRef = db.collection("users").doc(user.uid);
-			docRef.get().then(function(data){
+			docRef.get().then(function (data) {
 				console.log(data);
 			});
 			console.log(user);
 			console.log(user.displayName);
 			so.show();
 			ac.show();
-			if(user.displayName === null){
+			if (user.displayName === null) {
 				act.text(user.email);
 			} else {
 				act.text(user.displayName);
@@ -117,7 +141,7 @@
 			li.show();
 		}
 	});
-	$('#btn-signout').click(function(){
+	$('#btn-signout').click(function () {
 		app.auth().signOut();
 	});
 

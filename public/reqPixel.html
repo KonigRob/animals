@@ -37,33 +37,37 @@
 </head>
 <body>
 <h1>
-	hi
+	Buy a square!
 </h1>
 <!--<form action="javascript:" onsubmit="uploadFile(this);">-->
 <div>
+	<input type="radio" name="mapVis" id="memeMapVisible" title="Meme Map" checked required> Meme Map
+	<input type="radio" name="mapVis" id="takenMapVisible" title="Taken Map"> Spots Taken Map
+	<br />
 	Select meme to upload:
 	<input type="file" name="imageToUpload" id="imageToUpload">
-	Width:<input type="number" id="widthX" name="photoWidth" title="Width" min="0" max="999">
-	Height:<input type="number" id="heightY" name="photoHeight" title="Height" min="0" max="999">
-	<input type="radio" name="size" value="10" id="tinySq" title="tiny" checked required> 10x10
-	<input type="radio" name="size" value="20" id="smallSq" title="small"> 20x20
-	<input type="radio" name="size" value="30" id="mediumSq" title="medium"> 30x30
-	<input type="radio" name="size" value="40" id="largeSq" title="large"> 40x40
-	<input type="text" name="userid" id="userid" hidden>
+	<br />
+	Please click on the map to select a spot for your picture.
+	<br />
+	<input type="number" id="widthX" name="photoWidth" title="Width" min="0" max="999" value="0" required hidden>
+	<input type="number" id="heightY" name="photoHeight" title="Height" min="0" max="999" value="0" required hidden>
+	Please select a size of square
+	<input type="radio" name="size" value="10" id="tinySq" title="tiny" checked required> Tiny
+	<input type="radio" name="size" value="20" id="smallSq" title="small"> Small
+	<input type="radio" name="size" value="30" id="mediumSq" title="medium"> Medium
+	<input type="radio" name="size" value="40" id="largeSq" title="large"> Large
+	<br />
 	Link:<input type="text" id="hyperLink" title="link">
 	<button onclick="uploadFile()">Submit</button>
-	<!--<input type="submit" value="Buy" name="submit">-->
-<!--</form>-->
+	<a href="index.html">home</a>
 </div>
 
-<a href="index.html">console</a>
+<div id="mememapBox" style="width: 1000px; height: 1000px; margin: 0">
+	<div id="mapBox" style="margin: 0; position: absolute; height: 10px; width: 10px; border: grey solid 2px"></div>
+	<img id="mememap" src=""  alt="meme Map" style="border: solid black 2px">
 
-<img id="mememap" src="" border="2" alt="meme Map">
+</div>
 
-
-<script>
-
-</script>
 
 
 <script>
@@ -123,44 +127,41 @@
 				}
 			}, function() {
 				// Upload completed successfully, now we can get the download URL
+				let k = x.val() - (x.val()%10);
+				let t = y.val() - (y.val()%10);
 				uploadTask.snapshot.ref.getDownloadURL().then(function(downloadURL) {
 					db.collection("requested-memes").doc((user.uid+"_"+time).toString()).set({
 						userID:user.uid,
 						time:time,
 						fileLink: downloadURL,
-						x:x.val(),
-						y:y.val(),
+						x:k,
+						y:t,
 						sizeOfSquare:size,
 						website:link
 					});
 				});
-				// uploadTask.snapshot.ref.getDownloadURL().then(function(downloadURL) {
-				// 	var docRef = db.collection("users").doc(user.uid);
-				// 	let requestion = {
-				// 		[time]:
-				// 		{
-				// 			location: downloadURL,
-				// 			x: x.val(),
-				// 			y: y.val(),
-				// 			sizeOfSquare: size,
-				// 			website: link
-				// 		}
-				// 	};
-				// 	db.collection("users").doc(user.uid).update(requestion).then(function () {
-				// 		console.log("Successfully written to database")
-				// 	});
-				// 	console.log('File available at', downloadURL);
-				// });
+				alert("Your photo has been uploaded and requested to be added! (please don't spam the submit button)");
 			});
 	}
 	$(function () {
+		let squareBox = $('#mapBox');
+		let divBox = $('#mememapBox');
+		let mememap = $('#mememap');
+		let size = 10;
+		let globalX = mememap.pageX, globalY = mememap.pageY;
 		storage.ref('meme-map/meme-map.png').getDownloadURL().then(function (value) {
 			$('#mememap').attr('src', value);
 		});
-		$('#mememap').click(function (event) {
-			var map = $('#mememap');
-			var horizontal = event.pageX - map.position().left - 2;
-			var vertical = event.pageY - map.position().top - 2.125;
+		$('#widthX').keyup(function () {
+			squareBox.css('left', $(this).val());
+		});
+		mememap.click(function (event) {
+			let sqrX = event.pageX - (event.pageX%10) - 2;
+			let sqrY = event.pageY - (event.pageY%10);
+			let map = $('#mememap');
+			let bottom = map.position().top + map.offset().top + map.outerHeight(true);
+			let horizontal = event.pageX - map.position().left - 2;
+			let vertical = event.pageY - map.position().top - 2;
 			if (horizontal < 0) {
 				horizontal = 0;
 			} else if (horizontal > 1000) {
@@ -171,26 +172,64 @@
 			} else if (vertical > 1000) {
 				vertical = 1000;
 			}
+			if(sqrY < map.position().top){ sqrY = map.position().top; }
+			if(sqrX < map.position().left){ sqrX = map.position().left; }
+			checkYWhenChanging(sqrY, size);
+			checkXWhenChanging(sqrX, size);
+			console.log("x: ", sqrX, ", y: ", sqrY, ", bot: ", bottom);
 			$('#widthX').val(Math.round(horizontal));
 			$('#heightY').val(Math.round(vertical));
 		});
-		// $('#tinySq').change((function () {
-		// 	alert("tiny");
-		// }));
-		// $('#smallSq').change((function () {
-		// 	alert("small");
-		// }));
-		// $('#mediumSq').change((function () {
-		// 	alert("medium");
-		// }));
-		// $('#largeSq').change((function () {
-		// 	alert("large");
-		// }));
+		function checkXWhenChanging(x, size){
+			squareBox.css('width', size + 'px');
+			if(x + size > 1000){
+				x = 1008 - size;
+			}
+			squareBox.css('left', x);
+			globalX = x;
+		}
+		function checkYWhenChanging(y, size){
+			squareBox.css('height', size + 'px');
+			if(y + size > 1200){
+				y = 1200 - size;
+			}
+			squareBox.css('top', y);
+			globalY = y;
+		}
+		$('#memeMapVisible').change(function () {
+			storage.ref('meme-map/meme-map.png').getDownloadURL().then(function (value) {
+				$('#mememap').attr('src', value);
+			});
+		});
+		$('#takenMapVisible').change(function () {
+			storage.ref('meme-map/taken-map.png').getDownloadURL().then(function (value) {
+				$('#mememap').attr('src', value);
+			});
+		});
+		$('#tinySq').change((function () {
+			size = 10;
+			checkYWhenChanging(globalY, size);
+			checkXWhenChanging(globalX, size);
+		}));
+		$('#smallSq').change((function () {
+			size = 20;
+			checkYWhenChanging(globalY, size);
+			checkXWhenChanging(globalX, size);
+		}));
+		$('#mediumSq').change((function () {
+			size = 30;
+			checkYWhenChanging(globalY, size);
+			checkXWhenChanging(globalX, size);
+
+		}));
+		$('#largeSq').change((function () {
+			size = 40;
+			checkYWhenChanging(globalY, size);
+			checkXWhenChanging(globalX, size);
+		}));
 	});
 	app.auth().onAuthStateChanged(function (user){
-		if(user){
-			$('#userid').val(user.uid);
-		} else {
+		if(!user){
 			window.location.replace("index.html");
 		}
 	});
